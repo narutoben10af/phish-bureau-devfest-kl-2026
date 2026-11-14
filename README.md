@@ -62,3 +62,13 @@ Validation: 17 tests passed, including bounded Gmail requests and body extractio
 After connecting Gmail, visitors can start a local scan of all mail, the last 30 days, inbox or their Gmail search. Spam/Trash are opt-in. The scan paginates in batches of 50 until exhausted or stopped, without changing any emails. Each message is inspected locally for common scam patterns; a link alone does not flag a message. Results are possible warning signs, not verified scammer identities. Up to 500 flagged summaries are retained in tab memory; disconnect/new scan/reload clears them. Emails over 256 KB and HTML-only mail use snippets; plain text is bounded to 24,000 characters. The UI reports limited checks and partial scans after interruption. Nothing from Gmail is sent to Gemma.
 
 Validation: 20 tests passed, including multi-page scanning, local classification, cancellation, oversized/HTML-only fallback, and read-only requests. A browser QA fixture (outside the repository, fictional messages only) scanned three emails across two pages, flagged two, and opened the local evidence review. Live private-mail scan was not run by the agent.
+
+## Prepared Gemma mailbox review (activation pending)
+
+The optional contextual scan reviews every selected email, without a keyword prefilter. It sends sender/reply-to headers, subject, and up to 8,000 characters to the server only after explicit consent. Runs are limited to 10 or 25 matching messages; capped and interrupted scans remain partial. Calls are spaced ten seconds apart, with a 30-second client timeout and the existing server quota. No fallback is presented as an AI assessment.
+
+Backend `/gmail-analyze` rejects requests unless `GMAIL_AI_DATA_POLICY=google-paid-services` and the model secret are configured. `/health` exposes only a capability boolean. Set this operator attestation only after verifying that the API key’s Google project has an active billing account and Google paid-services no-training terms apply. The flag alone does not change Google billing or data processing. Activation remains pending owner billing approval; no Gmail data was sent to an unpaid model during development.
+
+Validation: 23 tests pass, covering keyword-free email review, AI scan caps, explicit consent, and server rejection without the required data-policy configuration. Browser integration was checked using fictional mail and simulated model responses, not private Gmail.
+
+A live request to the currently deployed Gemma endpoint with fictional invoice text returned `ai_unavailable`; successful real-model behavior for this new scan is not yet verified. The browser scan preview used simulated AI responses only.
