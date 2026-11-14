@@ -56,3 +56,9 @@ The default page is the message checker, with shared navigation for Check a mess
 The optional Gmail picker uses Google Identity Services with gmail.readonly. Its public OAuth client ID is configured in dist/gmail-config.mjs. Access tokens stay in tab memory. It lists at most 12 headers and reads one chosen plain-text body; no sending, deleting, HTML execution, or attachment fetches. Gmail-derived messages are blocked from the current free Gemma endpoint and use local checks. Google OAuth testing/verification controls who may connect.
 
 Validation: 17 tests passed, including bounded Gmail requests and body extraction. Browser checks covered the message-first home, local analysis and return navigation, mobile layout, and creating a real room then joining from a second tab using a spaced lowercase code.
+
+## Optional mailbox scan
+
+After connecting Gmail, visitors can start a local scan of all mail, the last 30 days, inbox or their Gmail search. Spam/Trash are opt-in. The scan paginates in batches of 50 until exhausted or stopped, without changing any emails. Each message is inspected locally for common scam patterns; a link alone does not flag a message. Results are possible warning signs, not verified scammer identities. Up to 500 flagged summaries are retained in tab memory; disconnect/new scan/reload clears them. Emails over 256 KB and HTML-only mail use snippets; plain text is bounded to 24,000 characters. The UI reports limited checks and partial scans after interruption. Nothing from Gmail is sent to Gemma.
+
+Validation: 20 tests passed, including multi-page scanning, local classification, cancellation, oversized/HTML-only fallback, and read-only requests. A browser QA fixture (outside the repository, fictional messages only) scanned three emails across two pages, flagged two, and opened the local evidence review. Live private-mail scan was not run by the agent.
