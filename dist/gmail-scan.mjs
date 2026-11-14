@@ -1,5 +1,5 @@
-import {analyze} from './detector.mjs?v=20261114-10';
-import {plainEmail,headerValue} from './gmail.mjs?v=20261114-10';
+import {analyze} from './detector.mjs?v=20261114-11';
+import {plainEmail,headerValue} from './gmail.mjs?v=20261114-11';
 const weights={secrets:3,remote:3,secrecy:3,pressure:2,reward:2,payment:1,link:1};
 export function inspectEmail(message){
  const body=plainEmail(message.payload),fullText='Subject: '+headerValue(message,'Subject')+'\n\n'+(body||message.snippet||''),text=fullText.slice(0,24000);

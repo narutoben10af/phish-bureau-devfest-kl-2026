@@ -76,3 +76,5 @@ Choose 10, 25 or all matching emails for contextual review. Capped, failed and i
 Build: npm ci, npm test, npm run build:browser. GitHub Pages generates dist/vendor during deployment; generated runtime files and model weights are not committed. Runtime licenses are included in the generated vendor directory.
 
 Validation: 24 tests pass, covering pagination, read-only requests, AI scan caps, inference without a keyword prefilter, strict output validation and worker cancellation. Actual model/GPU browser testing is recorded after deployment below.
+
+The model downloader uses resumable 32 MiB range chunks with bounded retries, exact Content-Range and length checks. Interrupted downloads keep only complete public-weight chunks for the next attempt.

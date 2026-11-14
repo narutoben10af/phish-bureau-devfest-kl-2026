@@ -8,17 +8,29 @@ function emit(id,type,value={}){self.postMessage({id,type,...value});}
 async function loadModel(id){
  if(engine)return;
  if(!self.navigator.gpu||!await self.navigator.gpu.requestAdapter())throw Error('WebGPU is unavailable. Use a supported Chrome or Edge device, or the local pattern checker.');
- const cache=await caches.open(CACHE);let cached=await cache.match(MODEL_URL);
- if(!cached){
- loadAbort=new AbortController();const response=await fetch(MODEL_URL,{signal:loadAbort.signal,credentials:'omit'});if(!response.ok||!response.body)throw Error('Gemma model download failed. Check your connection and retry.');
- const total=Number(response.headers.get('content-length'))||2340000000;let loaded=0,last=0;
- const stream=response.body.pipeThrough(new TransformStream({transform(chunk,controller){loaded+=chunk.byteLength;if(Date.now()-last>300){emit(id,'progress',{stage:'download',loaded,total});last=Date.now();}controller.enqueue(chunk);}}));
- try{await cache.put(MODEL_URL,new Response(stream,{headers:{'Content-Type':'application/octet-stream'}}));}catch(e){if(e.name==='QuotaExceededError')throw Error('Not enough browser storage for the roughly 2.4 GB model. Free space or use local patterns.');throw e;}
- cached=await cache.match(MODEL_URL);
+ const cache=await caches.open(CACHE);let cached=await cache.match(MODEL_URL),modelStream;
+ if(cached){modelStream=cached.body;}else{
+ loadAbort=new AbortController();const total=2340870772,chunkSize=32*1024*1024,keys=[];let loaded=0;
+ for(let start=0;start<total;start+=chunkSize){
+ if(loadAbort.signal.aborted)throw new DOMException('Stopped.','AbortError');const end=Math.min(start+chunkSize,total)-1,length=end-start+1;
+ const key=MODEL_URL+'?phish-cache-chunk='+start;keys.push(key);let chunk=await cache.match(key);
+ if(!chunk||Number(chunk.headers.get('Content-Length'))!==length){
+ let bytes;for(let attempt=0;attempt<3;attempt++){
+ try{const url=MODEL_URL+'?download=true&phish_chunk='+start+'&end='+end;
+ const response=await fetch(url,{headers:{Range:`bytes=${start}-${end}`},signal:AbortSignal.any([loadAbort.signal,AbortSignal.timeout(90000)]),credentials:'omit'});
+ if(response.status!==206||response.headers.get('Content-Range')!==`bytes ${start}-${end}/${total}`)throw Error('The model host returned an incomplete chunk.');
+ bytes=await response.arrayBuffer();if(bytes.byteLength!==length)throw Error('A model chunk was interrupted.');break;
+ }catch(error){if(loadAbort.signal.aborted)throw new DOMException('Stopped.','AbortError');if(attempt===2)throw Error('Model download interrupted. Choose Prepare again to resume saved chunks.');await new Promise(resolve=>setTimeout(resolve,1000));}
+ }
+ try{await cache.put(key,new Response(bytes,{headers:{'Content-Type':'application/octet-stream','Content-Length':String(length)}}));}catch{throw Error('Browser storage could not save the model. Free space, or use local patterns.');}
+ }
+ loaded+=length;emit(id,'progress',{stage:'download',loaded,total});
+ }
+ let index=0;modelStream=new ReadableStream({async pull(controller){if(index>=keys.length){controller.close();return;}const chunk=await cache.match(keys[index++]);if(!chunk)throw Error('A downloaded model chunk is missing. Prepare Gemma again.');controller.enqueue(new Uint8Array(await chunk.arrayBuffer()));}});
  }
  emit(id,'progress',{stage:'initialize'});
  await loadLiteRtLm(new URL('./litert-wasm/',self.location.href).href);
- engine=await Engine.create({model:cached.body,mainExecutorSettings:{maxNumTokens:4096}});
+ engine=await Engine.create({model:modelStream,mainExecutorSettings:{maxNumTokens:4096}});
  loadAbort=null;
 }
 self.onmessage=async({data})=>{
