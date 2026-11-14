@@ -48,3 +48,11 @@ Independent prototype. Not affiliated with Deriv. No competition submission was 
 Set `GEMINI_API_KEY` as a secret environment variable on the room-server Site, then deploy a saved version to apply it. Never put a key into frontend code, GitHub, or hosting.json. The `/analyze` route uses a fixed scam-review instruction, no tools, 2000-character inputs, 25-second model timeout, response validation, and aggregate limits of 10 requests/minute and 250/day. Quota counters contain no messages or email addresses. If the provider is unavailable, the UI reports that honestly and offers the separate local checker.
 
 Direct mailbox OAuth is not configured. Email import is local, and AI sharing requires explicit consent.
+
+## Message-first home and Gmail beta
+
+The default page is the message checker, with shared navigation for Check a message, Practice, Beat the clock and Live room. Room creation and joining have separate controls; pasted join codes accept spaces and lowercase. Real generated codes exclude 0 and 1.
+
+The optional Gmail picker uses Google Identity Services with gmail.readonly. Its public OAuth client ID is configured in dist/gmail-config.mjs. Access tokens stay in tab memory. It lists at most 12 headers and reads one chosen plain-text body; no sending, deleting, HTML execution, or attachment fetches. Gmail-derived messages are blocked from the current free Gemma endpoint and use local checks. Google OAuth testing/verification controls who may connect.
+
+Validation: 17 tests passed, including bounded Gmail requests and body extraction. Browser checks covered the message-first home, local analysis and return navigation, mobile layout, and creating a real room then joining from a second tab using a spaced lowercase code.
