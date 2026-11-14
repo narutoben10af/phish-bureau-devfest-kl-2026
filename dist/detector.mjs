@@ -8,5 +8,5 @@ export const rules = [
 ];
 export function analyze(text){const findings=rules.flatMap(rule=>{const match=[...text.matchAll(new RegExp(rule.pattern.source,'gi'))];return match.length?[{id:rule.id,title:rule.title,why:rule.why,quotes:[...new Set(match.map(m=>m[0]))].slice(0,3)}]:[]});
  const links=text.match(/(?:https?:\/\/|www\.)[^\s<>]+|\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|xyz|top|example|click|live|help)(?:\/[^\s<>]*)?/gi)||[];
- if(links.length)findings.push({id:'link',title:'A link to verify independently',quotes:links.slice(0,3),why:'The destination is not checked. A familiar name or HTTPS does not prove a link is safe. Open the official app or website yourself.'});
+ if(links.length)findings.push({id:'link',title:'A link to verify independently',quotes:[...new Set(links.map(link=>link.replace(/[.,!?;:)]+$/,'')))].slice(0,3),why:'The destination is not checked. A familiar name or HTTPS does not prove a link is safe. Open the official app or website yourself.'});
  return {findings,level:findings.length>=3?'Multiple warning signs':findings.length?'Worth a closer look':'No obvious patterns found'};}

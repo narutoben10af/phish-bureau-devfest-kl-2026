@@ -1,0 +1,21 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync,readdirSync} from 'node:fs';
+import worker from './worker/index.js';
+import {CASE_BANK} from './shared/cases.mjs';
+function database(){const raw=new DatabaseSync(':memory:');raw.exec('PRAGMA foreign_keys=ON');for(const f of readdirSync(new URL('./drizzle/',import.meta.url)).filter(f=>f.endsWith('.sql')))raw.exec(readFileSync(new URL('./drizzle/'+f,import.meta.url),'utf8'));const prepare=sql=>({bind(...args){return {async first(){return raw.prepare(sql).get(...args)||null;},async all(){return {results:raw.prepare(sql).all(...args)};},async run(){const r=raw.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}};}}}});return {prepare,async batch(statements){raw.exec('BEGIN');try{const results=[];for(const s of statements)results.push(await s.run());raw.exec('COMMIT');return results;}catch(e){raw.exec('ROLLBACK');throw e;}},raw};}
+test('two-player room enforces auth, synchronized rounds, one answer, scores and expiry',async()=>{const DB=database(),env={DB};const realNow=Date.now;let now=1700000000000;Date.now=()=>now;const api=async(path,body,token)=>{const r=await worker.fetch(new Request('https://rooms.example'+path,{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(body)}),env);return {status:r.status,data:await r.json()};};try{
+ const host=(await api('/rooms',{name:'Host'})).data;assert.ok(host.code);const guest=(await api('/join',{code:host.code,name:'Guest'})).data;assert.ok(guest.playerToken);
+ assert.equal((await api('/join',{code:host.code,name:'Guest'})).status,409);
+ assert.equal((await api('/state',{code:host.code},'wrong')).status,401);
+ assert.equal((await api('/start',{code:host.code},guest.playerToken)).status,403);
+ const start=(await api('/start',{code:host.code},host.hostToken)).data.startAt;
+ assert.equal((await api('/join',{code:host.code,name:'Late'})).status,409);
+ for(let index=0;index<8;index++){now=start+index*20000+1000;const a=(await api('/state',{code:host.code},host.playerToken)).data,b=(await api('/state',{code:host.code},guest.playerToken)).data;assert.equal(a.question.id,b.question.id);assert.equal(a.deadline,b.deadline);assert.equal(a.question.suspicious,undefined);const answer=CASE_BANK.find(c=>c.id===a.question.id).suspicious;
+ const win=await api('/answer',{code:host.code,index,choice:answer},host.playerToken);assert.equal(win.data.points,138);assert.equal((await api('/answer',{code:host.code,index,choice:answer},host.playerToken)).status,409);assert.equal((await api('/answer',{code:host.code,index,choice:!answer},guest.playerToken)).data.points,0);
+ }
+ now=start+160000;const final=(await api('/state',{code:host.code},host.playerToken)).data;assert.equal(final.status,'finished');assert.equal(final.players[0].score,1104);assert.equal(final.players[0].correct,8);assert.equal((await api('/answer',{code:host.code,index:7,choice:true},guest.playerToken)).status,409);
+ now=host.expiresAt+1;assert.equal((await api('/state',{code:host.code},host.playerToken)).status,404);await api('/rooms',{name:'New Host'});assert.equal(DB.raw.prepare('SELECT COUNT(*) AS n FROM players WHERE room=?').get(host.code).n,0);
+ }finally{Date.now=realNow;DB.raw.close();}});
+test('room API rejects foreign origins and oversized input',async()=>{const r=await worker.fetch(new Request('https://rooms.example/rooms',{method:'POST',headers:{Origin:'https://bad.example','Content-Type':'application/json'},body:'{}'}),{});assert.equal(r.status,403);const large=await worker.fetch(new Request('https://rooms.example/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'x'.repeat(5000)})}),{});assert.equal(large.status,413);});

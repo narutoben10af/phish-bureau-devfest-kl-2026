@@ -1,1 +1,10 @@
-{"name":"scam-radar","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test detector.test.mjs","start":"python3 -m http.server 4173 --directory dist"}}
+{
+  "name": "scam-radar",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test detector.test.mjs room-server/server.test.mjs",
+    "start": "python3 -m http.server 4173 --directory dist"
+  }
+}

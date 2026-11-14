@@ -1,14 +1,20 @@
 # Verification
 
-- Detector unit tests: 5 passed.
-- Application JavaScript syntax check: passed.
-- Browser: Chrome, desktop and 390px phone breakpoint.
-- Played all five cases to a 5/5 result and Chief of trust issues rank.
-- Verified wrong-answer feedback, case replay, reset and next-case navigation.
-- Verified clue pinning populates the case notebook.
-- Verified custom-message dialog, local analysis, highlighted phrases and safer-next-step text.
-- Verified HTML-like message content is rendered as text, not executable markup.
-- Verified phone Case files / Investigate / Notebook navigation and no horizontal overflow at 390px.
-- Verified instructions and survival-guide dialogs open and close.
+11 automated tests pass:
+- Detector warnings, repeated use, benign wording and safe link display.
+- Eight balanced cases per round; ten rounds exhaust all 80 unique messages before recycling.
+- Bounded speed scoring and complete case data.
+- Two-player API lifecycle: room creation, join, authentication, host-only start, synchronized cases, unique answers, score calculation, final standings and expiry cleanup.
+- Disallowed origins and oversized requests rejected.
 
-The rule-based checker cannot verify senders or guarantee safety. Training and pasted messages are intentionally not persisted.
+Browser verification in Chrome:
+- Played the original five scenarios to completion and verified wrong-answer feedback, replay and reset.
+- Verified the revised eight-case round renders all case files and evidence.
+- Timed solo awarded 130 points for a correct call with approximately 15 seconds remaining, and froze the timer for reading feedback.
+- A real hosted live room connected two separate browser sessions, synchronized cases and clocks, awarded 114 points to a correct answer and zero to an incorrect answer, updated both leaderboards, and progressed to final standings.
+- Verified custom-message analysis and text-only rendering of HTML-like input.
+- Verified phone navigation at 390px and no horizontal overflow before the final footer addition.
+- Verified help, FAQ and field-guide dialogs.
+- Fixed the reported notebook magnifier/text overlap with a dedicated icon box.
+
+This is a casual open-source learning game. The public case bank can be studied; it is not an exam or prize-award system. Messages are checked locally. Live rooms share only nickname, game answers, timing, and scores.

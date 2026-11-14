@@ -1,33 +1,44 @@
 # The Phish Bureau
 
-A playable detective desk for suspicious messages, built for DevFest KL 2026 Vibing Lounge, challenge 03.
+A playable detective workstation for suspicious messages, by Eian. DevFest KL 2026 Vibing Lounge, challenge 03.
 
-## The experience
+## Play
 
-- Five fictional case files: support impersonation, parcel redelivery, an ordinary lunch plan, prize bait, and an investment pitch.
-- Pin phrases to a case notebook, make a judgment, and learn why.
-- Track progress, earn a detective rank, replay or revisit cases.
-- Paste your own message for explainable, browser-local pattern checks with highlighted evidence.
-- Responsive workstation: case inbox, evidence desk, and field notebook; three-panel navigation on phones.
-- Keyboard-accessible dialogs, reduced-motion support, no dependency installation or build step.
+- **Practice:** eight shuffled cases, no clock, 100 points per correct call.
+- **Beat the clock:** 20 seconds per case; 100 points per correct call plus up to 40 speed points. Wrong answers and timeouts score zero.
+- **Live room:** host/join by six-character code, up to 24 players, synchronized server clocks, server-calculated scores and a shared leaderboard. New players join before the host starts.
+- **Message lab:** private, explainable pattern checks on your own message text.
+
+The bank contains 80 authored fictional messages across 16 situations. Ten balanced eight-case solo rounds use all 80 without repeats in the same session, then the deck reshuffles. This is a casual learning game; the source bank is public and not suitable for adversarial exams or prize awards.
 
 ## Run and test
 
-`npm start` serves `dist` at http://localhost:4173.
+`npm start` serves `dist` at http://localhost:4173. No frontend installation or build is needed.
 
-`npm test` runs detector tests. JavaScript syntax can be checked with `node --check dist/app.js`.
+`npm test` runs 11 detector, shuffle, scoring and multiplayer API tests. Node 22.13+ is required for the test-only in-memory SQLite adapter.
 
-## Publish
+## Deployments
 
-The included `.github/workflows/pages.yml` tests the detector and publishes `dist` to GitHub Pages on pushes to `main`. Set Pages build type to GitHub Actions. Asset references are relative, so repository-based Pages hosting works.
+- GitHub Pages serves the frontend through `.github/workflows/pages.yml` on pushes to `main`.
+- `room-server/` contains all live-room backend source, its database schema and generated migrations. It is separately hosted through ChatGPT Sites because GitHub Pages cannot run a shared room server.
+- The endpoint is declared as `ROOM_API` in `dist/app.js`.
+- `room-server/build.mjs` embeds the shared case bank into a dependency-free Worker module. After changing the bank, synchronize `dist/cases.mjs` to `room-server/shared/cases.mjs` before building.
+- Backend hosting identity is in `room-server/.openai/hosting.json`; it contains no secret. No credentials belong in this repository.
 
-## Privacy and limits
+## Privacy and contact
 
-Messages are processed locally, without storage or network submission. They disappear on reload. Google Fonts is used for typography; message text is never sent to that service. The checker uses transparent warning-pattern rules, not AI or live link reputation. It cannot verify senders or certify safety. User text is rendered using textContent and text nodes. Example URLs use reserved `.example` domains. Training progress is in memory only.
+Pasted messages remain on the device and are not stored. Live room nicknames, answers, scores and timings are stored on the room server; room access expires after two hours, and expired data is purged when another room is created. Player credentials are randomly generated, stored in tab session storage, and hashed in the database. Only hosts can start. The server rejects duplicate or late submissions.
 
-## References
+The frontend uses Google Fonts. It adds no advertising trackers or analytics cookies. Privacy policy and FAQ are linked in the footer.
 
-- Safety guidance: [FTC phishing guide](https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams)
-- Interface research: Front inbox and multi-column application examples on [Mobbin](https://mobbin.com/explore/web). No proprietary screenshots or assets are redistributed.
+Portfolio: https://eian-portfolio-2026.narutoxkillua.chatgpt.site
 
-Independent prototype. Not affiliated with Deriv. No competition submission has been made automatically.
+Enquiries: limsieian@gmail.com. Contact links open the visitor’s mail client. No automatic reply or continuous inbox monitoring is configured by this site.
+
+## References and assistance
+
+- Safety guidance: https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams
+- Interface research: Front inbox and multi-column application patterns on https://mobbin.com/explore/web . No proprietary screenshots or assets are redistributed.
+- Antigravity assisted with core message-checker review. See ANTIGRAVITY-HANDOFF.md for its actual contribution and applied findings.
+
+Independent prototype. Not affiliated with Deriv. No competition submission was made automatically.
