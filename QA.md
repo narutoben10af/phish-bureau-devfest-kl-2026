@@ -18,3 +18,9 @@ Browser verification in Chrome:
 - Fixed the reported notebook magnifier/text overlap with a dedicated icon box.
 
 This is a casual open-source learning game. The public case bank can be studied; it is not an exam or prize-award system. Messages are checked locally. Live rooms share only nickname, game answers, timing, and scores.
+
+## Gemma 4 addition
+
+15 automated tests now pass, including request construction, fixed system instructions, no tools, server-side key handling, structured output validation, explicit consent enforcement, missing-key behavior, and local MIME email import. AI inputs are limited to 2000 characters with aggregate rate limits. Direct Gmail OAuth is not configured.
+
+Live Gemma checks returned likely_scam for credential phishing, no_obvious_signs for a lunch invitation, and likely_scam for phishing containing an instruction override. The model identified the injected instruction as evidence and did not follow it.

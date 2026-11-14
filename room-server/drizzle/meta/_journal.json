@@ -8,6 +8,13 @@
       "when": 1794640134544,
       "tag": "0000_thick_nick_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794641344339,
+      "tag": "0001_superb_angel",
+      "breakpoints": true
     }
   ]
 }

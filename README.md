@@ -7,7 +7,7 @@ A playable detective workstation for suspicious messages, by Eian. DevFest KL 20
 - **Practice:** eight shuffled cases, no clock, 100 points per correct call.
 - **Beat the clock:** 20 seconds per case; 100 points per correct call plus up to 40 speed points. Wrong answers and timeouts score zero.
 - **Live room:** host/join by six-character code, up to 24 players, synchronized server clocks, server-calculated scores and a shared leaderboard. New players join before the host starts.
-- **Message lab:** private, explainable pattern checks on your own message text.
+- **Message lab:** Gemma 4 AI assessment with explicit sharing consent, plus a separate local pattern check. Paste text or locally import a plain-text .eml email.
 
 The bank contains 80 authored fictional messages across 16 situations. Ten balanced eight-case solo rounds use all 80 without repeats in the same session, then the deck reshuffles. This is a casual learning game; the source bank is public and not suitable for adversarial exams or prize awards.
 
@@ -15,7 +15,7 @@ The bank contains 80 authored fictional messages across 16 situations. Ten balan
 
 `npm start` serves `dist` at http://localhost:4173. No frontend installation or build is needed.
 
-`npm test` runs 11 detector, shuffle, scoring and multiplayer API tests. Node 22.13+ is required for the test-only in-memory SQLite adapter.
+`npm test` runs 15 detector, shuffle, scoring and multiplayer API tests. Node 22.13+ is required for the test-only in-memory SQLite adapter.
 
 ## Deployments
 
@@ -27,7 +27,7 @@ The bank contains 80 authored fictional messages across 16 situations. Ten balan
 
 ## Privacy and contact
 
-Pasted messages remain on the device and are not stored. Live room nicknames, answers, scores and timings are stored on the room server; room access expires after two hours, and expired data is purged when another room is created. Player credentials are randomly generated, stored in tab session storage, and hashed in the database. Only hosts can start. The server rejects duplicate or late submissions.
+Local checks remain on the device. AI review sends message text through the backend to Google’s Gemini API using gemma-4-26b-a4b-it. The app does not store message text or model responses. Free-tier Google processing may use submissions for product improvement; the form discloses this. Live room nicknames, answers, scores and timings are stored on the room server; room access expires after two hours, and expired data is purged when another room is created. Player credentials are randomly generated, stored in tab session storage, and hashed in the database. Only hosts can start. The server rejects duplicate or late submissions.
 
 The frontend uses Google Fonts. It adds no advertising trackers or analytics cookies. Privacy policy and FAQ are linked in the footer.
 
@@ -42,3 +42,9 @@ Enquiries: limsieian@gmail.com. Contact links open the visitor’s mail client. 
 - Antigravity assisted with core message-checker review. See ANTIGRAVITY-HANDOFF.md for its actual contribution and applied findings.
 
 Independent prototype. Not affiliated with Deriv. No competition submission was made automatically.
+
+## Gemma 4 configuration
+
+Set `GEMINI_API_KEY` as a secret environment variable on the room-server Site, then deploy a saved version to apply it. Never put a key into frontend code, GitHub, or hosting.json. The `/analyze` route uses a fixed scam-review instruction, no tools, 2000-character inputs, 25-second model timeout, response validation, and aggregate limits of 10 requests/minute and 250/day. Quota counters contain no messages or email addresses. If the provider is unavailable, the UI reports that honestly and offers the separate local checker.
+
+Direct mailbox OAuth is not configured. Email import is local, and AI sharing requires explicit consent.
