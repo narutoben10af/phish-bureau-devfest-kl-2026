@@ -1,5 +1,5 @@
-import {analyze} from './detector.mjs';
-import {CASE_BANK,drawRound,scoreAnswer} from './cases.mjs';
+import {analyze} from './detector.mjs?v=20261114-3';
+import {CASE_BANK,drawRound,scoreAnswer} from './cases.mjs?v=20261114-3';
 const $=s=>document.querySelector(s);
 const node=(tag,text='',cls='')=>{const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;};
 const evidence=(id,title,quote,why)=>({id,title,quotes:[quote],why});
