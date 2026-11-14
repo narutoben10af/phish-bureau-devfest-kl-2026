@@ -63,12 +63,16 @@ After connecting Gmail, visitors can start a local scan of all mail, the last 30
 
 Validation: 20 tests passed, including multi-page scanning, local classification, cancellation, oversized/HTML-only fallback, and read-only requests. A browser QA fixture (outside the repository, fictional messages only) scanned three emails across two pages, flagged two, and opened the local evidence review. Live private-mail scan was not run by the agent.
 
-## Prepared Gemma mailbox review (activation pending)
+## On-device Gemma mailbox review
 
-The optional contextual scan reviews every selected email, without a keyword prefilter. It sends sender/reply-to headers, subject, and up to 8,000 characters to the server only after explicit consent. Runs are limited to 10 or 25 matching messages; capped and interrupted scans remain partial. Calls are spaced ten seconds apart, with a 30-second client timeout and the existing server quota. No fallback is presented as an AI assessment.
+Gmail AI scans use Gemma 4 E2B entirely in a browser worker through Google LiteRT-LM 0.19.0. No paid inference API, billing account, cloud fallback, or email upload is used. The existing server Gmail AI route remains disabled. The separate manual-message cloud checker is unchanged.
 
-Backend `/gmail-analyze` rejects requests unless `GMAIL_AI_DATA_POLICY=google-paid-services` and the model secret are configured. `/health` exposes only a capability boolean. Set this operator attestation only after verifying that the API key’s Google project has an active billing account and Google paid-services no-training terms apply. The flag alone does not change Google billing or data processing. Activation remains pending owner billing approval; no Gmail data was sent to an unpaid model during development.
+Visitors explicitly prepare Gemma, downloading roughly 2.4 GB of model weights from the LiteRT community’s public Hugging Face repository. Weights are cached in browser Cache Storage, never email contents. The UI supports stopping downloads and removing the cached model. Device/GPU memory and internet data costs are the visitor’s responsibility; WebGPU-capable Chrome/Edge is required.
 
-Validation: 23 tests pass, covering keyword-free email review, AI scan caps, explicit consent, and server rejection without the required data-policy configuration. Browser integration was checked using fictional mail and simulated model responses, not private Gmail.
+The worker is built from pinned npm packages with an integrity lockfile; its JS/WASM runtime is served by GitHub Pages. Model URL is pinned to the repository commit and never contains Gmail credentials. Each email gets a fresh conversation with scam-analysis-only instructions, no tools and validated JSON output. Exact-quote filtering removes fabricated excerpts. Cancellation terminates the worker and clears pending private text. Disconnect unloads the worker; public model weights remain cached until removed.
 
-A live request to the currently deployed Gemma endpoint with fictional invoice text returned `ai_unavailable`; successful real-model behavior for this new scan is not yet verified. The browser scan preview used simulated AI responses only.
+Choose 10, 25 or all matching emails for contextual review. Capped, failed and interrupted scans are reported as partial; they never silently fall back to keyword matching. AI assessments can be wrong and do not verify senders or prove safety.
+
+Build: npm ci, npm test, npm run build:browser. GitHub Pages generates dist/vendor during deployment; generated runtime files and model weights are not committed. Runtime licenses are included in the generated vendor directory.
+
+Validation: 24 tests pass, covering pagination, read-only requests, AI scan caps, inference without a keyword prefilter, strict output validation and worker cancellation. Actual model/GPU browser testing is recorded after deployment below.
