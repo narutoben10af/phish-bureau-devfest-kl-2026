@@ -1,0 +1,12 @@
+export const rules = [
+ {id:'secrets',title:'A request for private information',pattern:/\b(?:otp|one[- ]time (?:password|code)|password|pin|cvv|seed phrase|recovery phrase|verification code|bank details|card (?:number|details))\b/gi,why:'Requests for codes or account secrets deserve a pause. Never send them in a message reply.'},
+ {id:'pressure',title:'Pressure to act before you think',pattern:/\b(?:urgent(?:ly)?|immediately|act now|within \d+ (?:minutes?|hours?)|\d+ minutes?|suspend(?:ed)?|locked|last chance|final warning|expire[sd]?|deactivat\w*)\b/gi,why:'Short deadlines and threats can push you into acting without checking.'},
+ {id:'reward',title:'An unexpected reward',pattern:/\b(?:congratulations|winner|won|prize|lottery|free money|guaranteed (?:return|profit)s?|risk[- ]free|cash reward)\b/gi,why:'Unexpected prizes and guaranteed profits can be bait. Check the offer independently.'},
+ {id:'payment',title:'A payment or money-transfer request',pattern:/\b(?:transfer|processing fee|release fee|gift cards?|crypto(?:currency)?|bitcoin|deposit|pay(?:ment)?|send money)\b/gi,why:'Confirm who is asking and why before paying. Some payment methods are hard to reverse.'},
+ {id:'remote',title:'Access to your device',pattern:/\b(?:anydesk|teamviewer|remote access|screen shar(?:e|ing)|install (?:this|an?) app)\b/gi,why:'Unexpected requests to control your device can expose your accounts and information.'},
+ {id:'secrecy',title:'Pressure to keep it secret',pattern:/\b(?:do not tell|don.t tell|keep (?:it|this) (?:a )?secret|confidential transaction)\b/gi,why:'Secrecy can isolate you from someone who could help you spot a scam.'}
+];
+export function analyze(text){const findings=rules.flatMap(rule=>{const match=[...text.matchAll(new RegExp(rule.pattern.source,'gi'))];return match.length?[{id:rule.id,title:rule.title,why:rule.why,quotes:[...new Set(match.map(m=>m[0]))].slice(0,3)}]:[]});
+ const links=text.match(/(?:https?:\/\/|www\.)[^\s<>]+|\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|xyz|top|example|click|live|help)(?:\/[^\s<>]*)?/gi)||[];
+ if(links.length)findings.push({id:'link',title:'A link to verify independently',quotes:links.slice(0,3),why:'The destination is not checked. A familiar name or HTTPS does not prove a link is safe. Open the official app or website yourself.'});
+ return {findings,level:findings.length>=3?'Multiple warning signs':findings.length?'Worth a closer look':'No obvious patterns found'};}
