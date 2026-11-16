@@ -67,7 +67,7 @@ Validation: 20 tests passed, including multi-page scanning, local classification
 
 Gmail AI scans use Gemma 4 E2B entirely in a browser worker through Google LiteRT-LM 0.19.0. No paid inference API, billing account, cloud fallback, or email upload is used. The existing server Gmail AI route remains disabled. The separate manual-message cloud checker is unchanged.
 
-Visitors explicitly prepare Gemma, downloading roughly 2.4 GB of model weights from the LiteRT community’s public Hugging Face repository. Weights are cached in browser Cache Storage, never email contents. The UI supports stopping downloads and removing the cached model. Device/GPU memory and internet data costs are the visitor’s responsibility; WebGPU-capable Chrome/Edge is required.
+Visitors explicitly prepare Gemma, downloading roughly 2.4 GB of model weights from the LiteRT community’s public Hugging Face repository. By default weights stream into memory without a disk cache; users can opt into saving weights in browser Cache Storage. Email contents are never cached. The UI supports stopping downloads and removing the cached model. Device/GPU memory and internet data costs are the visitor’s responsibility; WebGPU-capable Chrome/Edge is required.
 
 The worker is built from pinned npm packages with an integrity lockfile; its JS/WASM runtime is served by GitHub Pages. Model URL is pinned to the repository commit and never contains Gmail credentials. Each email gets a fresh conversation with scam-analysis-only instructions, no tools and validated JSON output. Exact-quote filtering removes fabricated excerpts. Cancellation terminates the worker and clears pending private text. Disconnect unloads the worker; public model weights remain cached until removed.
 
@@ -75,6 +75,8 @@ Choose 10, 25 or all matching emails for contextual review. Capped, failed and i
 
 Build: npm ci, npm test, npm run build:browser. GitHub Pages generates dist/vendor during deployment; generated runtime files and model weights are not committed. Runtime licenses are included in the generated vendor directory.
 
-Validation: 24 tests pass, covering pagination, read-only requests, AI scan caps, inference without a keyword prefilter, strict output validation and worker cancellation. Actual model/GPU browser testing is recorded after deployment below.
+Validation: 25 tests pass, covering pagination, read-only requests, AI scan caps, inference without a keyword prefilter, strict output validation and worker cancellation. Real on-device browser testing is recorded below.
 
-The model downloader uses resumable 32 MiB range chunks with bounded retries, exact Content-Range and length checks. Interrupted downloads keep only complete public-weight chunks for the next attempt.
+The optional model cache uses resumable 32 MiB range chunks with bounded retries, exact Content-Range and length checks. Interrupted downloads keep only complete public-weight chunks for the next attempt.
+
+Actual model verification (16 November 2026): Google Gemma 4 E2B loaded on WebGPU in regular Chrome using the real 2.34 GB weights. The fictional invoice test returned a valid uncertain assessment. A mailbox integration fixture used fictional Gmail messages but REAL local inference: 2 emails checked, 1 flagged for independent verification (changed invoice account), lunch message not flagged. No private Gmail was read and no cloud AI endpoint was called. Saved chunks were reused after reload. Incognito storage proved insufficient in this environment; stream-only mode is available, while normal Chrome with optional model caching is recommended.
